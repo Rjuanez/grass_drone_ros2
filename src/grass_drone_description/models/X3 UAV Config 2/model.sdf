@@ -41,38 +41,11 @@
                     </mesh>
                 </geometry>
             </visual>
-            <visual name="downward_flashlight_visual">
-                <pose frame="">-0.043704 0 0.087914 -0.2 0.000158 -1.57002</pose>
-                <geometry>
-                    <mesh>
-                        <scale>0.01 0.01 0.01</scale>
-                        <uri>meshes/spotlight.dae</uri>
-                    </mesh>
-                </geometry>
-            </visual>
-            <visual name="left_flashlight_visual">
-                <pose frame="">-0.061985 0.060826 0.046102 0.06 -4.8e-05 -1.27</pose>
-                <geometry>
-                    <mesh>
-                        <scale>0.01 0.01 0.01</scale>
-                        <uri>X3/meshes/spotlight.dae</uri>
-                    </mesh>
-                </geometry>
-            </visual>
             <visual name="marker_visual_2">
                 <pose frame="">-0.08 0.037 0.04 -1.0472 -0 0.2</pose>
                 <geometry>
                     <mesh>
                         <uri>meshes/led.dae</uri>
-                    </mesh>
-                </geometry>
-            </visual>
-            <visual name="right_flashlight_visual">
-                <pose frame="">-0.061985 -0.060826 0.046102 0.06 -4.8e-05 -1.87</pose>
-                <geometry>
-                    <mesh>
-                        <scale>0.01 0.01 0.01</scale>
-                        <uri>meshes/spotlight.dae</uri>
                     </mesh>
                 </geometry>
             </visual>
@@ -84,61 +57,6 @@
                     </mesh>
                 </geometry>
             </visual>
-
-            <light name="right_light_source" type="spot">
-                <pose frame="">0.01 -0.08 0.05 3.131592653589795 -1.5107899999999999 2.841592653589791</pose>
-                <attenuation>
-                    <range>15</range>
-                    <linear>0</linear>
-                    <constant>0.1</constant>
-                    <quadratic>0.01</quadratic>
-                </attenuation>
-                <diffuse>0.8 0.8 0.5 1</diffuse>
-                <specular>0.8 0.8 0.5 1</specular>
-                <spot>
-                    <inner_angle>1</inner_angle>
-                    <outer_angle>1.1</outer_angle>
-                    <falloff>1</falloff>
-                </spot>
-                <direction>0 0 -1</direction>
-                <cast_shadows>1</cast_shadows>
-            </light>
-            <light name="downward_flashlight_source" type="spot">
-                <pose frame="">0.03 0 0.075 -0.01 -1.3708026535897933 0</pose>
-                <attenuation>
-                    <range>15</range>
-                    <linear>0</linear>
-                    <constant>0.1</constant>
-                    <quadratic>0.01</quadratic>
-                </attenuation>
-                <diffuse>0.8 0.8 0.5 1</diffuse>
-                <specular>0.8 0.8 0.5 1</specular>
-                <spot>
-                    <inner_angle>1</inner_angle>
-                    <outer_angle>1.1</outer_angle>
-                    <falloff>1</falloff>
-                </spot>
-                <direction>0 0 -1</direction>
-                <cast_shadows>1</cast_shadows>
-            </light>
-            <light name="left_flashlight_source" type="spot">
-                <pose frame="">0.01 0.08 0.05 3.131592653589795 -1.5107899999999999 -2.841592653589791</pose>
-                <attenuation>
-                    <range>15</range>
-                    <linear>0</linear>
-                    <constant>0.1</constant>
-                    <quadratic>0.01</quadratic>
-                </attenuation>
-                <diffuse>0.8 0.8 0.5 1</diffuse>
-                <specular>0.8 0.8 0.5 1</specular>
-                <spot>
-                    <inner_angle>1</inner_angle>
-                    <outer_angle>1.1</outer_angle>
-                    <falloff>1</falloff>
-                </spot>
-                <direction>0 0 -1</direction>
-                <cast_shadows>1</cast_shadows>
-            </light>
 
             <sensor name="imu_sensor" type="imu">
                 <always_on>1</always_on>
@@ -253,7 +171,7 @@
                 </magnetometer>
             </sensor>
 
-            <visual name="camera_visual">
+            <visual name="camera_front_visual">
                 <pose>0.1 0 0 0 0 0</pose>
                 <geometry>
                     <box>
@@ -304,6 +222,53 @@
                     </noise>
                 </camera>
             </sensor>
+            <visual name="camera_down_visual">
+                <pose>0 0 -0.05 0 0 0</pose>
+                <geometry>
+                    <box>
+                        <size>0.02 0.02 0.02</size>
+                    </box>
+                </geometry>
+            </visual>
+            <sensor name="camera_down" type="camera">
+		    <pose>0 0 -0.05 0 1.5708 0</pose> <!-- Mirando hacia abajo (-90° en X) -->
+		    <always_on>1</always_on>
+		    <update_rate>20</update_rate>
+		    <camera name="camera_down">
+			<horizontal_fov>1.0472</horizontal_fov>
+			<lens>
+			    <intrinsics>
+				<fx>1108.5</fx>
+				<fy>1108.5</fy>
+				<cx>640.5</cx>
+				<cy>480.5</cy>
+				<s>0</s>
+			    </intrinsics>
+			</lens>
+			<distortion>
+			    <k1>0.0</k1>
+			    <k2>0.0</k2>
+			    <k3>0.0</k3>
+			    <p1>0.0</p1>
+			    <p2>0.0</p2>
+			    <center>0.5 0.5</center>
+			</distortion>
+			<image>
+			    <width>1280</width>
+			    <height>960</height>
+			    <format>R8G8B8</format>
+			</image>
+			<clip>
+			    <near>0.01</near>
+			    <far>300</far>
+			</clip>
+			<noise>
+			    <type>gaussian</type>
+			    <mean>0</mean>
+			    <stddev>0.007</stddev>
+			</noise>
+		    </camera>
+	</sensor>
         </link>
         <link name="rotor_0">
             <pose frame="">0.13 -0.22 0.023 0 -0 0</pose>
