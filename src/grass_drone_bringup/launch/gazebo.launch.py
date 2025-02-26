@@ -18,6 +18,7 @@ def generate_launch_description():
     # Setup project paths
     pkg_ros_gz_sim = get_package_share_directory('ros_gz_sim')
     pkg_project_gazebo = get_package_share_directory('grass_drone_gazebo')
+    pkg_project_bringup = get_package_share_directory('grass_drone_bringup')
 
     # Setup to launch the simulator and Gazebo world
     gz_sim = IncludeLaunchDescription(
@@ -36,11 +37,23 @@ def generate_launch_description():
        condition=IfCondition(LaunchConfiguration('rviz'))
     )
 
+    # Bridge ROS topics and Gazebo messages for establishing communication
+    bridge = Node(
+        package='ros_gz_bridge',
+        executable='parameter_bridge',
+        parameters=[{
+            'config_file': os.path.join(pkg_project_bringup, 'config', 'ros_gz_drone_bridge.yaml'),
+            'qos_overrides./tf_static.publisher.durability': 'transient_local',
+        }],
+        output='screen'
+    )
+
 
     return LaunchDescription([
         gz_sim,
         DeclareLaunchArgument('rviz', default_value='true',
                               description='Open RViz.'),
+        bridge,
         rviz
 
     ])
