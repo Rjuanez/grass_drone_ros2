@@ -4,3 +4,4 @@
 # Pero no ignorar la carpeta src y su conenido
 !/src/
 !.gitignore
+!ReadMe.md
