@@ -6,4 +6,4 @@ Use `colcon build` to build the whole project, or `colcon build --symlink-instal
 ## Sourcing the project
 Once the project is build it's time to add to `.bashrc` file the following `source` commands:
 
-To source ros2 `source /opt/ros/humble/setup.bash`, to source the new project `source <path to your folder>/grass_drone_ros2/install/setup.bash`
+To source ros2 `source /opt/ros/humble/setup.bash`, to source the new project `source <path to your folder>/grass_drone_ros2/install/setup.sh`
