@@ -3,3 +3,10 @@
   ros_type_name:   "actuator_msgs/msg/Actuators"
   gz_type_name:    "gz.msgs.Actuators"
   direction:       "ROS_TO_GZ"
+
+#gz topic published by sensor plugin(sky_camera)
+- ros_topic_name:  "/sky_cam/image_raw"
+  gz_topic_name:   "/sky_cam"
+  ros_type_name:   "sensor_msgs/msg/Image"
+  gz_type_name:    "gz.msgs.Image"
+  direction:       "GZ_TO_ROS"

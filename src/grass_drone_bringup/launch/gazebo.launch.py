@@ -48,12 +48,20 @@ def generate_launch_description():
         output='screen'
     )
 
+    #Camera(sky_cam) ROS2_Bridge 
+    ros_gz_image_bridge = Node(
+        package="ros_gz_bridge",
+        executable="parameter_bridge",
+        arguments=["/sky_cam@sensor_msgs/msg/Image@gz.msgs.Image"]
+    )
+
 
     return LaunchDescription([
         gz_sim,
         DeclareLaunchArgument('rviz', default_value='true',
                               description='Open RViz.'),
         bridge,
+        ros_gz_image_bridge,
         rviz
 
     ])
