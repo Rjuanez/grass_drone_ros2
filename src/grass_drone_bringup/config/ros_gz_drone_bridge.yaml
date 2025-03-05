@@ -10,3 +10,10 @@
   ros_type_name:   "sensor_msgs/msg/Image"
   gz_type_name:    "gz.msgs.Image"
   direction:       "GZ_TO_ROS"
+
+#gz topic, muestra la posicion
+- ros_topic_name: "/drone/pose"
+  gz_topic_name: "/world/quadcopter/dynamic_pose/info"
+  ros_type_name: "geometry_msgs/msg/PoseArray"
+  gz_type_name: "gz.msgs.Pose_V"
+  direction: "GZ_TO_ROS"
