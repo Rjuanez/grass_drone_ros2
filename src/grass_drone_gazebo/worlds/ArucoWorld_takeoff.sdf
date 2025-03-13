@@ -230,14 +230,14 @@
         <visual name='visual'>
           <geometry>
             <mesh>
-              <uri>file:///home/ruben/Downloads/Arucoo.dae</uri>
+              <uri>models/Arucoo.dae</uri>
             </mesh>
           </geometry>
         </visual>
         <collision name='collision'>
           <geometry>
             <mesh>
-              <uri>file:///home/ruben/Downloads/Arucoo.dae</uri>
+              <uri>models/Arucoo.dae</uri>
             </mesh>
           </geometry>
         </collision>
@@ -367,9 +367,7 @@
           <topic>sky_cam</topic>
         </sensor>
       </link>
-      <plugin name="set_pose_plugin" filename="libignition-gazebo-set-pose-system.so">
-        <topic>/model/sky_cam/set_pose</topic>
-      </plugin>
+
     </model>
 
     <light name='sun' type='directional'>
