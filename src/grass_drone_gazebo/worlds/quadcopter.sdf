@@ -112,7 +112,7 @@
     <model name="ToF">
       <static>true</static>
       <link name="tof_link">
-        <sensor type="ray" name="tof">
+        <sensor type="gpu_lidar" name="tof">
           <pose>0 0 3 0 1.57 0</pose>
           <topic>tof_sensor</topic>
           <update_rate>10</update_rate>
