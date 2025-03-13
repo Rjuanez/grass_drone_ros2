@@ -17,3 +17,10 @@
   ros_type_name: "geometry_msgs/msg/PoseArray"
   gz_type_name: "gz.msgs.Pose_V"
   direction: "GZ_TO_ROS"
+
+#gz topic to ros2: LiDAR ToF sensor
+- ros_topic_name: "/tof_sensor"
+  gz_topic_name: "/tof_sensor"
+  ros_type_name: "sensor_msgs/msg/LaserScan"
+  gz_type_name: "ignition.msgs.LaserScan"
+  direction: "GZ_TO_ROS"
