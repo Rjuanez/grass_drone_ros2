@@ -175,7 +175,7 @@
             <sensor type="gpu_lidar" name="tof">
                 <pose>0 0 -0.05 0 -1.5708 0</pose>
                 <topic>tof_sensor</topic>
-                <update_rate>10</update_rate>
+                <update_rate>100</update_rate>
                 <lidar>
                     <scan>
                         <horizontal>
