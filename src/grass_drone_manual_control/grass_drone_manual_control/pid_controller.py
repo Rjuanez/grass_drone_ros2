@@ -7,12 +7,16 @@ class PIDController:
 
         self.prev_error = 0
         self.integral = 0
+        self.prev_measurement = 0
 
     def update(self, measurement):
         error = self.setpoint - measurement
-        self.integral += error  # Acumulador integral
-        derivative = error - self.prev_error  # Diferencia de errores sucesivos
-        self.prev_error = error
+        
+        self.integral += error  # Acumulador integral 
+        self.integral = max(min(self.integral, 10), -10) # Para no acumular demasiado error
+ 
+        derivative = measurement - self.prev_measurement  # En vez de sobre el error, sobre la distancia/velocidad
+        self.prev_measurement = measurement
 
         # Calcular la salida PID
         output = (self.kp * error) + (self.ki * self.integral) + (self.kd * derivative)
@@ -25,4 +29,3 @@ class PIDController:
 
     def set_kp(self,kp):
         self.kp = kp
-
