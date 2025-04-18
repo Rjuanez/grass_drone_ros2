@@ -24,3 +24,10 @@
   ros_type_name: "sensor_msgs/msg/LaserScan"
   gz_type_name: "ignition.msgs.LaserScan"
   direction: "GZ_TO_ROS"
+
+#gz topic to ros2: IMU sensor
+- ros_topic_name: "/IMU"
+  gz_topic_name: "/imu/data"
+  ros_type_name: "sensor_msgs/msg/Imu"
+  gz_type_name: "gz.msgs.IMU"
+  direction: "GZ_TO_ROS"
