@@ -11,7 +11,7 @@ from sensor_msgs.msg import Imu
 from grass_drone_manual_control.pid_controller import PIDController
 
 import time
-import math #Para Euler rotation conversion
+import math #Para Euler orientation conversion
 import numpy as np #Para prints
 
 MAX_VELOCITY = 5.0 # Limit vel
@@ -40,9 +40,9 @@ class ManualControl(Node):
         self.manual_thrust = 0.0  # Offset desde el punto de hover (660)
         #self.THRUST_STEP = 30.0  # Ajusta sensibilidad de teclado
 
-        self.imu_sub = self.create_subscription(Imu, '/imu/data', self.imu_callback, 10)
-        self.pid_pitch = PIDController(kp=8.0, ki=0.0, kd=6.0, setpoint=0)  # Control de inclinación frontal
-        self.pid_roll = PIDController(kp=8.0, ki=0.0, kd=6.0, setpoint=0)   # Control de inclinación lateral
+        self.imu_sub = self.create_subscription(Imu, '/IMU', self.imu_callback, 10)
+        self.pid_pitch = PIDController(kp=50.0, ki=1.0, kd=10.0, setpoint=0)  # Control de inclinación frontal
+        self.pid_roll = PIDController(kp=50.0, ki=1.0, kd=10.0, setpoint=0)   # Control de inclinación lateral
         self.current_pitch = 0.0 
         self.current_roll = 0.0
         self.target_pitch = 0.0  # Inclinación deseada (radianes)
@@ -62,9 +62,13 @@ class ManualControl(Node):
         # UP/DOWN (L3)
         self.manual_thrust = msg.axes[1] * MAX_VELOCITY
 
-        # FRONT/BACK and RIGHT/LEFT (R3)
-        self.target_pitch = msg.axes[3] * MAX_ANGLE  # Limitar a ±0.2 rad (≈11.5°)
-        self.target_roll = msg.axes[2] * MAX_ANGLE   # Mismo límite
+        # FRONT/BACK yººº RIGHT/LEFT (R3)
+        self.target_pitch = msg.axes[4] * MAX_ANGLE  # Limitar a ±0.2 rad (≈11.5°)
+        self.target_roll = msg.axes[6] * MAX_ANGLE   # Mismo límite
+
+        # IPORTANTE:
+        # Array axes = [xL3,yL3,L2,xR3,yR3,R2,flechas...] --> rango de valores (-1 to 1)
+        # Array buttons = [X,O,triangle,squre,L1,R1,L2,R2,...] --> valores binarios (1 o 0)
                 
     def imu_callback(self, msg):
         # Convertir cuaternión a ángulos Euler (pitch/roll)
@@ -110,10 +114,10 @@ class ManualControl(Node):
             pitch_output = self.pid_pitch.update(self.current_pitch)
             roll_output = self.pid_roll.update(self.current_roll)
             
-            # Mixer de motores (configuración "X" común en drones)
-            m1 = 660.0 + control_signal - pitch_output + roll_output  # Delantero izquierdo
-            m2 = 660.0 + control_signal - pitch_output - roll_output  # Delantero derecho
-            m3 = 660.0 + control_signal + pitch_output - roll_output  # Trasero izquierdo
+            # Hover en ~660
+            m3 = 660.0 + control_signal - pitch_output + roll_output  # Delantero izquierdo
+            m1 = 660.0 + control_signal - pitch_output - roll_output  # Delantero derecho
+            m2 = 660.0 + control_signal + pitch_output - roll_output  # Trasero izquierdo
             m4 = 660.0 + control_signal + pitch_output + roll_output  # Trasero derecho
             
             
@@ -123,11 +127,14 @@ class ManualControl(Node):
                 float(max(400, min(m3, 999))),
                 float(max(400, min(m4, 999)))
             )
-        """# Ajustar a los límites del motor (400-999) con hover en ~660
-        control_signal = max(400.0, min(control_signal, 999.0)) 
+        # PERO PORQUEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+        # posicion real motores cuando enviamos la potencia con publish_motors
+        # motor 1 = delante derecha
+        # motor 2 = detras izquierda
+        # motor 3 = delante izquierda
+        # motor 4 = detras derecha
+        
 
-        self.publish_motors(float(control_signal), float(control_signal), float(control_signal), float(control_signal))
-"""
     def listener_callback(self, msg):
         self.range = msg.ranges[0]
         if self.range > 80 or self.range < 0.0001:
