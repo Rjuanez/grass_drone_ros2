@@ -41,8 +41,8 @@ class ManualControl(Node):
         #self.THRUST_STEP = 30.0  # Ajusta sensibilidad de teclado
 
         self.imu_sub = self.create_subscription(Imu, '/IMU', self.imu_callback, 10)
-        self.pid_pitch = PIDController(kp=50.0, ki=1.0, kd=10.0, setpoint=0)  # Control de inclinación frontal
-        self.pid_roll = PIDController(kp=50.0, ki=1.0, kd=10.0, setpoint=0)   # Control de inclinación lateral
+        self.pid_pitch = PIDController(kp=120.0, ki=5.0, kd=60.0, setpoint=0)  # Control de inclinación frontal
+        self.pid_roll = PIDController(kp=120.0, ki=5.0, kd=60.0, setpoint=0)   # Control de inclinación lateral
         self.current_pitch = 0.0 
         self.current_roll = 0.0
         self.target_pitch = 0.0  # Inclinación deseada (radianes)
@@ -62,9 +62,9 @@ class ManualControl(Node):
         # UP/DOWN (L3)
         self.manual_thrust = msg.axes[1] * MAX_VELOCITY
 
-        # FRONT/BACK yººº RIGHT/LEFT (R3)
-        self.target_pitch = msg.axes[4] * MAX_ANGLE  # Limitar a ±0.2 rad (≈11.5°)
-        self.target_roll = msg.axes[6] * MAX_ANGLE   # Mismo límite
+        # FRONT/BACK y RIGHT/LEFT (R3)
+        self.target_pitch = msg.axes[4] * MAX_ANGLE  
+        self.target_roll = msg.axes[6] * MAX_ANGLE   # NO JOYSTICK DE MOMENTO
 
         # IPORTANTE:
         # Array axes = [xL3,yL3,L2,xR3,yR3,R2,flechas...] --> rango de valores (-1 to 1)
@@ -72,7 +72,10 @@ class ManualControl(Node):
                 
     def imu_callback(self, msg):
         # Convertir cuaternión a ángulos Euler (pitch/roll)
-        self.current_pitch, self.current_roll = self.quaternion_to_euler(msg.orientation)
+        new_pitch, new_roll = self.quaternion_to_euler(msg.orientation)
+        alpha = 0.7 #Reduccion de ruido
+        self.current_pitch = alpha * self.current_pitch + (1 - alpha) * new_pitch
+        self.current_roll = alpha * self.current_roll + (1 - alpha) * new_roll
 
     def quaternion_to_euler(self, q):
         # q: geometry_msgs/Quaternion
@@ -89,8 +92,11 @@ class ManualControl(Node):
         print(f'Altitude: {self.range:.4f}')
         print(f'Velocity: {self.current_velocity:.4f}')
         
-        print(f'Current pich {self.current_pitch}, Current roll {self.current_roll}')
-        print(f'Target pich {self.target_pitch}, Target roll {self.target_roll}')
+        print(f'Current pich {self.current_pitch:.4f}, Current roll {self.current_roll:.4f}')
+        print(f'Target pich {self.target_pitch:.4f}, Target roll {self.target_roll:.4f}')
+
+        print("DDDDDDDDDDDDD") 
+
         # Uso de prints en vez de self.get_logger().info() para verlo mejor en la terminal
 
     def timer_callback(self):
@@ -136,9 +142,13 @@ class ManualControl(Node):
         
 
     def listener_callback(self, msg):
-        self.range = msg.ranges[0]
-        if self.range > 80 or self.range < 0.0001:
-            self.range = 0.0
+        tof_read = msg.ranges[0]
+        if tof_read > 80 or tof_read < 0.0001:
+            tof_read = 0.0
+        
+        # Compensar con la orientación (IMU) !!!!!!!!!!!!
+        height = tof_read * math.cos(self.current_pitch) * math.cos(self.current_roll)
+        self.range = max(height, 0.0)  # Asegurar que no sea negativa
         
         # Calculo vel actual
         self.current_velocity = (self.range - self.last_range) / self.timer_period  
