@@ -16,6 +16,8 @@ import numpy as np #Para prints
 
 MAX_VELOCITY = 5.0 # Limit vel
 MAX_ANGLE = 0.2 # Limit ang (rad)
+DAMPING_GAIN = 15.0  # Ajustable. Limita velocidad angular
+DEADZONE = 0.1
 
 class ManualControl(Node):
 
@@ -41,12 +43,19 @@ class ManualControl(Node):
         #self.THRUST_STEP = 30.0  # Ajusta sensibilidad de teclado
 
         self.imu_sub = self.create_subscription(Imu, '/IMU', self.imu_callback, 10)
-        self.pid_pitch = PIDController(kp=120.0, ki=5.0, kd=60.0, setpoint=0)  # Control de inclinación frontal
-        self.pid_roll = PIDController(kp=120.0, ki=5.0, kd=60.0, setpoint=0)   # Control de inclinación lateral
+        self.pid_pitch = PIDController(kp=150.0, ki=7.5, kd=70.0, setpoint=0)  # Control de inclinación frontal
+        self.pid_roll = PIDController(kp=150.0, ki=7.5, kd=70.0, setpoint=0)   # Control de inclinación lateral
         self.current_pitch = 0.0 
         self.current_roll = 0.0
         self.target_pitch = 0.0  # Inclinación deseada (radianes)
         self.target_roll = 0.0   # Ej: 0.1 rad ≈ 5.7 grados
+        self.pitch_rate = 0.0
+        self.roll_rate = 0.0
+
+        self.pid_yaw = PIDController(kp=50.0, ki=5.0, kd=10.5)
+        self.current_yaw = 0.0
+        self.target_yaw = 0.0
+        self.yaw_rate = 0.0
 
         # ALLWAYS LAST
         self.timer_period = 0.004  # seconds
@@ -57,45 +66,60 @@ class ManualControl(Node):
     def set_manual_mode(self, is_manual):
         self.manual_mode = is_manual
 
-
     def joy_callback(self, msg):
         # UP/DOWN (L3)
-        self.manual_thrust = msg.axes[1] * MAX_VELOCITY
+        self.manual_thrust = (msg.axes[1] if abs(msg.axes[1]) > DEADZONE else 0.0) * MAX_VELOCITY
+        
 
         # FRONT/BACK y RIGHT/LEFT (R3)
-        self.target_pitch = msg.axes[4] * MAX_ANGLE  
-        self.target_roll = msg.axes[6] * MAX_ANGLE   # NO JOYSTICK DE MOMENTO
+        self.target_pitch = (msg.axes[4] if abs(msg.axes[4]) > DEADZONE else 0.0) * MAX_ANGLE 
+        self.target_roll = -((msg.axes[3] if abs(msg.axes[3]) > DEADZONE else 0.0) * MAX_ANGLE)   # Joystick inv
 
+        # YAW (L2 y R2)
+        self.target_yaw += msg.buttons[5] * 0.05  # acumulativo
+        self.target_yaw -= msg.buttons[4] * 0.05  # acumulativo
         # IPORTANTE:
         # Array axes = [xL3,yL3,L2,xR3,yR3,R2,flechas...] --> rango de valores (-1 to 1)
         # Array buttons = [X,O,triangle,squre,L1,R1,L2,R2,...] --> valores binarios (1 o 0)
                 
     def imu_callback(self, msg):
         # Convertir cuaternión a ángulos Euler (pitch/roll)
-        new_pitch, new_roll = self.quaternion_to_euler(msg.orientation)
+        new_pitch, new_roll, new_yaw = self.quaternion_to_euler(msg.orientation)
         alpha = 0.7 #Reduccion de ruido
         self.current_pitch = alpha * self.current_pitch + (1 - alpha) * new_pitch
         self.current_roll = alpha * self.current_roll + (1 - alpha) * new_roll
+        self.current_yaw = alpha * self.current_yaw + (1 - alpha) * new_yaw
+
+        self.pitch_rate = msg.angular_velocity.y  # Eje de pitch
+        self.roll_rate  = msg.angular_velocity.x  # Eje de roll
+        self.yaw_rate = msg.angular_velocity.z
+        ####
 
     def quaternion_to_euler(self, q):
         # q: geometry_msgs/Quaternion
         x, y, z, w = q.x, q.y, q.z, q.w
         roll = math.atan2(2*(w*x + y*z), 1 - 2*(x*x + y*y))
         pitch = math.asin(2*(w*y - z*x))
-        return pitch, roll
+        yaw = math.atan2(2*(w*z + x*y), 1 - 2*(y*y + z*z))
+        
+        return pitch, roll, yaw
 
     def publish_motors(self, m1, m2, m3, m4):
         msg = Actuators()
         msg.velocity = [m1, m2, m3, m4]
         self.publisher_.publish(msg)
-        print(f'Publishing: {np.round(msg.velocity,4)}') 
+        print(f'Publishing: {np.round(msg.velocity,4)}')
+        print("Motors position: FR | BL | FL | BR") 
+
         print(f'Altitude: {self.range:.4f}')
         print(f'Velocity: {self.current_velocity:.4f}')
         
         print(f'Current pich {self.current_pitch:.4f}, Current roll {self.current_roll:.4f}')
         print(f'Target pich {self.target_pitch:.4f}, Target roll {self.target_roll:.4f}')
 
-        print("DDDDDDDDDDDDD") 
+        print(f'Current yaw: {self.current_yaw:.4f}, Target yaw: {self.target_yaw:.4f}')
+
+        print("SSSSSSSSSSSSSSSSSSSSSSSSS") 
 
         # Uso de prints en vez de self.get_logger().info() para verlo mejor en la terminal
 
@@ -115,16 +139,23 @@ class ManualControl(Node):
             self.pid_velocity.set_setpoint(self.manual_thrust)
             control_signal = self.pid_velocity.update(self.current_velocity)
 
+            
+
             self.pid_pitch.set_setpoint(self.target_pitch)
             self.pid_roll.set_setpoint(self.target_roll)
-            pitch_output = self.pid_pitch.update(self.current_pitch)
-            roll_output = self.pid_roll.update(self.current_roll)
+
+            # Aplicar el damping (frenado por velocidad angular)
+            pitch_output = self.pid_pitch.update(self.current_pitch) - DAMPING_GAIN * self.pitch_rate
+            roll_output  = self.pid_roll.update(self.current_roll) - DAMPING_GAIN * self.roll_rate
+
+            self.pid_yaw.set_setpoint(self.target_yaw)
+            yaw_output = self.pid_yaw.update(self.current_yaw) - DAMPING_GAIN * self.yaw_rate
             
             # Hover en ~660
-            m3 = 660.0 + control_signal - pitch_output + roll_output  # Delantero izquierdo
-            m1 = 660.0 + control_signal - pitch_output - roll_output  # Delantero derecho
-            m2 = 660.0 + control_signal + pitch_output - roll_output  # Trasero izquierdo
-            m4 = 660.0 + control_signal + pitch_output + roll_output  # Trasero derecho
+            m1 = 660.0 + control_signal - pitch_output - roll_output - yaw_output # Delante derecha
+            m2 = 660.0 + control_signal + pitch_output + roll_output - yaw_output # Detrás izquierda
+            m3 = 660.0 + control_signal - pitch_output + roll_output + yaw_output # Delante izquierda
+            m4 = 660.0 + control_signal + pitch_output - roll_output + yaw_output # Detrás derecha
             
             
         self.publish_motors(
