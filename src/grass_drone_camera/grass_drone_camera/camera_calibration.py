@@ -1,51 +1,67 @@
 import cv2
 import numpy as np
 import glob
+import os
 
-# Definir dimensiones del tablero de ajedrez
-CHESSBOARD_SIZE = (7, 10)  # Cambia según el tamaño del tablero
-SQUARE_SIZE = 0.025  # 2.5 cm por cuadro, ajusta según el tamaño real
+# Parámetros del tablero de ajedrez
+CHESSBOARD_SIZE = (9, 12)  # Número de esquinas internas (filas, columnas)
+SQUARE_SIZE = 0.015  # Tamaño de cada cuadrado en metros (ajustar según tu tablero)
 
-# Criterios de terminación
-criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
-
-# Puntos 3D del tablero
+# Preparar puntos 3D del patrón (coordenadas del tablero en 3D)
 objp = np.zeros((CHESSBOARD_SIZE[0] * CHESSBOARD_SIZE[1], 3), np.float32)
 objp[:, :2] = np.mgrid[0:CHESSBOARD_SIZE[0], 0:CHESSBOARD_SIZE[1]].T.reshape(-1, 2) * SQUARE_SIZE
 
-# Listas para almacenar puntos
-objpoints = []  # Puntos 3D en el mundo real
-imgpoints = []  # Puntos 2D en la imagen
+# Listas para almacenar puntos 3D y puntos 2D de la imagen
+objpoints = []  # Puntos en el espacio real 3D
+imgpoints = []  # Puntos en el plano de la imagen 2D
 
-# Captura desde la cámara
-cap = cv2.VideoCapture(0)
+# Cargar imágenes del tablero de ajedrez
+folder = "/home/ruben/Documents/grass_drone_ros2/src/grass_drone_camera/grass_drone_camera/Calibration_Photos"
+images = glob.glob(os.path.join(folder, "*.png"))
 
-while True:
-    ret, frame = cap.read()
-    if not ret:
-        break
+print(f"Se encontraron {len(images)} imágenes en {folder}")
+if not images:
+    print("ERROR: No se encontraron imagenes. Verifica la ruta y el formato de los archivos.")
+    exit()
 
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+if not images:
+    print(f"No se encontraron imágenes en {folder}. Verifica la ruta.")
+    exit()
+
+
+for fname in images:
+    img = cv2.imread(fname)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    # Detectar esquinas del tablero
     ret, corners = cv2.findChessboardCorners(gray, CHESSBOARD_SIZE, None)
 
     if ret:
-        objpoints.append(objp)
-        corners2 = cv2.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
-        imgpoints.append(corners2)
-        cv2.drawChessboardCorners(frame, CHESSBOARD_SIZE, corners2, ret)
+        print(f"Esquinas detectadas en {fname}")
+        objpoints.append(objp)  # Guardar puntos 3D
+        imgpoints.append(corners)  # Guardar puntos 2D
 
-    cv2.imshow("Calibración de Cámara", frame)
+        # Dibujar y mostrar las esquinas detectadas
+        cv2.drawChessboardCorners(img, CHESSBOARD_SIZE, corners, ret)
+        cv2.imshow("Chessboard", img)
+        cv2.waitKey(500)
+    else:
+        print(f"No se detectaron esquinas en {fname}")
+        
 
-    if cv2.waitKey(1) & 0xFF == ord('c'):
-        break
-
-cap.release()
 cv2.destroyAllWindows()
+
+if not imgpoints:
+    print("ERROR: No se detectaron esquinas en ninguna imagen. Verifica las fotos y el tamaño del patrón.")
+    exit()
+
 
 # Calibrar la cámara
 ret, camera_matrix, dist_coeffs, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
 
-print("Matriz de la cámara:")
-print(camera_matrix)
-print("\nCoeficientes de distorsión:")
-print(dist_coeffs)
+# Guardar los parámetros en un archivo
+np.save("camera_matrix.npy", camera_matrix)
+np.save("dist_coeffs.npy", dist_coeffs)
+
+print("Camera Matrix:\n", camera_matrix)
+print("\nDistortion Coefficients:\n", dist_coeffs)
