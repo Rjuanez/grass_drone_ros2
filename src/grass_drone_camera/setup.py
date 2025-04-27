@@ -20,7 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            "test_node = grass_drone_camera.aruco_detection:main"
+            "aruco_detection_node = grass_drone_camera.aruco_detection:main",
+            "get_images_node = grass_drone_camera.get_images:main"
         ],
     },
 )

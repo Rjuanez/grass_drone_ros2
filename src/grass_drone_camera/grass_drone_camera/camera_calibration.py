@@ -4,8 +4,8 @@ import glob
 import os
 
 # Parámetros del tablero de ajedrez
-CHESSBOARD_SIZE = (9, 12)  # Número de esquinas internas (filas, columnas)
-SQUARE_SIZE = 0.015  # Tamaño de cada cuadrado en metros (ajustar según tu tablero)
+CHESSBOARD_SIZE = (11, 8)  # Número de esquinas internas (filas, columnas)
+SQUARE_SIZE = 0.015  # els quadrats son de 15 mm
 
 # Preparar puntos 3D del patrón (coordenadas del tablero en 3D)
 objp = np.zeros((CHESSBOARD_SIZE[0] * CHESSBOARD_SIZE[1], 3), np.float32)
@@ -16,7 +16,7 @@ objpoints = []  # Puntos en el espacio real 3D
 imgpoints = []  # Puntos en el plano de la imagen 2D
 
 # Cargar imágenes del tablero de ajedrez
-folder = "/home/ruben/Documents/grass_drone_ros2/src/grass_drone_camera/grass_drone_camera/Calibration_Photos"
+folder = "/home/ruben/Documents/grass_drone_ros2/src/grass_drone_camera/grass_drone_camera/Calibration_Photos2"
 images = glob.glob(os.path.join(folder, "*.png"))
 
 print(f"Se encontraron {len(images)} imágenes en {folder}")
