@@ -14,15 +14,13 @@ class ImageSubscriber(Node):
 
     def listener_callback(self, data):
         self.get_logger().info('Receiving video frame')
-        self.get_logger().info(f'Formato de imagen: {data.encoding}')
         img = self.br.imgmsg_to_cv2(data, desired_encoding="rgb8")
         img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
 
-        camera_matrix = np.array([[956.7226493, 0, 622.25296652],
-                                  [0, 956.88972207, 351.40937906],
-                                  [0, 0, 1]], dtype=np.float32)
-        #dist_coeffs = np.array([0.05494142, -0.3738535, 0.00342577, -0.00202905, 0.46160182])
-        dist_coeffs = np.zeros((5, 1), dtype=np.float32)
+        camera_matrix = np.array([[747.47830424 , 0, 450.98253964],
+                                [0, 856.17983209, 289.21665834],
+                                [0, 0, 1]], dtype=np.float32)
+        dist_coeffs = np.array([0.00060266, 0.01014434, -0.0002952, 0.00050071, -0.12741058])
 
         aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_ARUCO_ORIGINAL)
         aruco_params = cv2.aruco.DetectorParameters()
