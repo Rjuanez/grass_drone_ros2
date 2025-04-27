@@ -13,8 +13,9 @@ import math #Para Euler orientation conversion
 import numpy as np #Para prints
 
 MAX_VELOCITY = 5.0 # Limit vel
-MAX_ANGLE = 0.2 # Limit ang (rad)
-DAMPING_GAIN = 15.0  # Ajustable. Limita velocidad angular
+MAX_ANGLE = 0.3 # Limit ang (rad)
+MAX_YAW_RATE = 2.5 # Limit vel ang yaw (rad)
+DAMPING_GAIN = 3.0  # Ajustable. Limita velocidad angular
 DEADZONE = 0.1
 
 
@@ -41,8 +42,10 @@ class ManualControl(Node):
         #self.THRUST_STEP = 30.0  # Ajusta sensibilidad de teclado
 
         self.imu_sub = self.create_subscription(Imu, '/IMU', self.imu_callback, 10)
-        self.pid_pitch = PIDController(kp=150.0, ki=7.5, kd=70.0, setpoint=0)  # Control de inclinación frontal
-        self.pid_roll = PIDController(kp=150.0, ki=7.5, kd=70.0, setpoint=0)   # Control de inclinación lateral
+        self.pid_pitch_angle = PIDController(kp=6.0, ki=0.0, kd=0.8, setpoint=0)  # Control de inclinación frontal (angulo)
+        self.pid_roll_angle = PIDController(kp=6.0, ki=0.0, kd=0.8, setpoint=0)   # Control de inclinación lateral (angulo)
+        self.pid_pitch_rate = PIDController(kp=25.0, ki=1.0, kd=5.0, setpoint=0)  # Control velocidad angular
+        self.pid_roll_rate = PIDController(kp=25.0, ki=1.0, kd=5.0, setpoint=0)   # Control velocidad angular
         self.current_pitch = 0.0 
         self.current_roll = 0.0
         self.target_pitch = 0.0  # Inclinación deseada (radianes)
@@ -50,10 +53,10 @@ class ManualControl(Node):
         self.pitch_rate = 0.0
         self.roll_rate = 0.0
 
-        self.pid_yaw = PIDController(kp=150.0, ki=7.5, kd=70.0, setpoint=0) # Control de rotacion (yaw)
-        self.current_yaw = 0.0
-        self.target_yaw = 0.0
+        # Unicamente uso de velocidad angular para el yaw.
+        self.pid_yaw = PIDController(kp=15.0, ki=50.0, kd=0.0, setpoint=0) # Control de rotacion (yaw)
         self.yaw_rate = 0.0
+        self.target_yaw_rate = 0.0
 
         # ALLWAYS LAST
         self.timer_period = 0.004  # seconds
@@ -75,10 +78,13 @@ class ManualControl(Node):
         self.target_roll = -((msg.axes[3] if abs(msg.axes[3]) > DEADZONE else 0.0) * MAX_ANGLE)   # Joystick inv
 
         # YAW (L2 y R2)
+        self.target_yaw_rate = -(msg.buttons[5] - msg.buttons[4]) * MAX_YAW_RATE 
+        
+        """
         self.target_yaw -= msg.buttons[5] * 0.01  # acumulativo
         self.target_yaw += msg.buttons[4] * 0.01  # acumulativo:
         self.target_yaw = (self.target_yaw + math.pi) % (2 * math.pi) - math.pi  # Dentro del rango (-pi, pi)
-        
+        """
         # IPORTANTE:
         # Array axes = [xL3,yL3,L2,xR3,yR3,R2,flechas...] --> rango de valores (-1 to 1)
         # Array buttons = [X,O,triangle,squre,L1,R1,L2,R2,...] --> valores binarios (1 o 0)
@@ -86,13 +92,14 @@ class ManualControl(Node):
 
     def imu_callback(self, msg):
         # Convertir orintacion cuaternión a ángulos Euler
-        new_pitch, new_roll, new_yaw = self.quaternion_to_euler(msg.orientation)
+        new_pitch, new_roll = self.quaternion_to_euler(msg.orientation)
+        # ,new_yaw = ...
         
         # Reduccion de ruido (filtrado exponencial)
         alpha = 0.7 
         self.current_pitch = alpha * self.current_pitch + (1 - alpha) * new_pitch
         self.current_roll = alpha * self.current_roll + (1 - alpha) * new_roll
-        self.current_yaw = alpha * self.current_yaw + (1 - alpha) * new_yaw
+        #self.current_yaw = alpha * self.current_yaw + (1 - alpha) * new_yaw
 
         self.pitch_rate = msg.angular_velocity.y  
         self.roll_rate  = msg.angular_velocity.x  
@@ -104,9 +111,9 @@ class ManualControl(Node):
         x, y, z, w = q.x, q.y, q.z, q.w
         roll = math.atan2(2*(w*x + y*z), 1 - 2*(x*x + y*y))
         pitch = math.asin(2*(w*y - z*x))
-        yaw = math.atan2(2*(w*z + x*y), 1 - 2*(y*y + z*z))
+        #yaw = math.atan2(2*(w*z + x*y), 1 - 2*(y*y + z*z))
         
-        return pitch, roll, yaw
+        return pitch, roll #return yaw
 
 
     def publish_motors(self, m1, m2, m3, m4):
@@ -123,7 +130,7 @@ class ManualControl(Node):
         print(f'Current pich {self.current_pitch:.4f}, Current roll {self.current_roll:.4f}')
         print(f'Target pich {self.target_pitch:.4f}, Target roll {self.target_roll:.4f}')
 
-        print(f'Current yaw: {self.current_yaw:.4f}, Target yaw: {self.target_yaw:.4f}')
+        print(f'Current yaw rate: {self.yaw_rate:.4f}, Target yaw rate: {self.target_yaw_rate:.4f}')
 
         print("---------------------------------------------") 
         # Uso de prints en vez de self.get_logger().info() para verlo mejor en la terminal
@@ -145,17 +152,29 @@ class ManualControl(Node):
             self.pid_velocity.set_setpoint(self.manual_thrust)
             control_signal = self.pid_velocity.update(self.current_velocity)
 
-            self.pid_pitch.set_setpoint(self.target_pitch)
-            self.pid_roll.set_setpoint(self.target_roll)
+            self.pid_pitch_angle.set_setpoint(self.target_pitch)
+            self.pid_roll_angle.set_setpoint(self.target_roll)
 
-            # Aplicar el damping (frenado por velocidad angular)
-            pitch_output = self.pid_pitch.update(self.current_pitch) - DAMPING_GAIN * self.pitch_rate
-            roll_output  = self.pid_roll.update(self.current_roll) - DAMPING_GAIN * self.roll_rate
+            pitch_rate_desired = self.pid_pitch_angle.update(self.current_pitch)
+            roll_rate_desired = self.pid_roll_angle.update(self.current_roll)
+            pitch_rate_desired = max(-DAMPING_GAIN, min(pitch_rate_desired, DAMPING_GAIN))
+            roll_rate_desired = max(-DAMPING_GAIN, min(roll_rate_desired, DAMPING_GAIN))
 
+            self.pid_pitch_rate.set_setpoint(pitch_rate_desired)
+            self.pid_roll_rate.set_setpoint(roll_rate_desired)
+
+            pitch_output = self.pid_pitch_rate.update(self.pitch_rate)
+            roll_output  = self.pid_roll_rate.update(self.roll_rate)
+
+            # Yaw
+            self.pid_yaw.set_setpoint(self.target_yaw_rate)
+            yaw_output = self.pid_yaw.update(self.yaw_rate)
+
+            """
             # Calculo error yaw
             yaw_error = (self.target_yaw - self.current_yaw + math.pi) % (2 * math.pi) - math.pi
             yaw_output = self.pid_yaw.update_from_error(yaw_error) - DAMPING_GAIN * self.yaw_rate * 15.0
-
+            """
             # Hover en ~660
             m1 = 660.0 + control_signal - pitch_output - roll_output - yaw_output # Delante derecha
             m2 = 660.0 + control_signal + pitch_output + roll_output - yaw_output # Detrás izquierda

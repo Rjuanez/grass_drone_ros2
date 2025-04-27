@@ -23,7 +23,7 @@ class PIDController:
         output = (self.kp * error) + (self.ki * self.integral) + (self.kd * derivative)
         return output
     
-
+    """
     def update_from_error(self, error):
         # PID exclusivo para YAW.
         self.integral += error
@@ -31,7 +31,7 @@ class PIDController:
         derivative = error - self.prev_error
         self.prev_error = error
         return (self.kp * error) + (self.ki * self.integral) + (self.kd * derivative)
-
+    """
 
     def set_setpoint(self, new_setpoint):
         self.setpoint = new_setpoint
