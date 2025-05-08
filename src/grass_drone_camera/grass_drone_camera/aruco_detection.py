@@ -1,6 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
+from geometry_msgs.msg import Point
 from cv_bridge import CvBridge
 import cv2
 import numpy as np
@@ -10,12 +11,18 @@ class ImageSubscriber(Node):
     def __init__(self):
         super().__init__("image_subscriber")
         self.subscription = self.create_subscription(Image, 'sky_cam', self.listener_callback, 10)
+        self.publisher = self.create_publisher(Point,"/coordenades_dron_aruco",1000)
         self.br = CvBridge()
 
     def listener_callback(self, data):
         self.get_logger().info('Receiving video frame')
         img = self.br.imgmsg_to_cv2(data, desired_encoding="rgb8")
         img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+
+        p = Point()
+        p.x = 0.0
+        p.y = 0.0
+        p.z = 0.0
 
         camera_matrix = np.array([[747.47830424 , 0, 450.98253964],
                                 [0, 856.17983209, 289.21665834],
@@ -62,9 +69,20 @@ class ImageSubscriber(Node):
 
                     cv2.putText(img, info, (50,50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
                     cv2.putText(img, inclination, (50,80), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
-        
+
+                    
+                    p.x = x
+                    p.y = y
+                    p.z = z
+
         else:
             self.get_logger().info("NO DETECTANT")
+            
+
+        
+        self.publisher.publish(p)
+        self.get_logger().info(f'Coordenades: x = {p.x}, y = {p.y}, z = {p.z}')
+
         cv2.imshow("sky_cam",img)
         cv2.waitKey(1)
 
