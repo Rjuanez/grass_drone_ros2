@@ -1,17 +1,6 @@
 <?xml version="1.0" ?>
-<!--
-  Atlas ERC droning subtask simulation
 
-  Send commands to go straight up:
-
-      ign topic -t /X3/gazebo/command/motor_speed --msgtype ignition.msgs.Actuators -p 'velocity:[700, 700, 700, 700]'
-
-  And to turn off propellers:
-
-      ign topic -t /X3/gazebo/command/motor_speed --msgtype ignition.msgs.Actuators -p 'velocity:[0, 0, 0, 0]'
-
--->
-<sdf version='1.9'>
+<sdf version='1.6'>
   <world name='world_demo'>
     <physics name='4ms' type='ignored'>
       <max_step_size>0.0040000000000000001</max_step_size>

@@ -10,7 +10,7 @@ import time
 class ImageSubscriber(Node):
     def __init__(self):
         super().__init__("image_subscriber")
-        self.subscription = self.create_subscription(Image, 'sky_cam', self.listener_callback, 10)
+        self.subscription = self.create_subscription(Image, 'camera_down', self.listener_callback, 10)
         self.publisher = self.create_publisher(Point,"/coordenades_dron_aruco",1000)
         self.br = CvBridge()
 
@@ -83,7 +83,7 @@ class ImageSubscriber(Node):
         self.publisher.publish(p)
         self.get_logger().info(f'Coordenades: x = {p.x}, y = {p.y}, z = {p.z}')
 
-        cv2.imshow("sky_cam",img)
+        cv2.imshow("camera_down",img)
         cv2.waitKey(1)
 
 def main(args=None):

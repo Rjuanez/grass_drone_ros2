@@ -267,39 +267,19 @@
 		    <always_on>1</always_on>
 		    <update_rate>20</update_rate>
 		    <camera name="camera_down">
-			<horizontal_fov>1.0472</horizontal_fov>
-			<lens>
-			    <intrinsics>
-				<fx>1108.5</fx>
-				<fy>1108.5</fy>
-				<cx>640.5</cx>
-				<cy>480.5</cy>
-				<s>0</s>
-			    </intrinsics>
-			</lens>
-			<distortion>
-			    <k1>0.0</k1>
-			    <k2>0.0</k2>
-			    <k3>0.0</k3>
-			    <p1>0.0</p1>
-			    <p2>0.0</p2>
-			    <center>0.5 0.5</center>
-			</distortion>
-			<image>
-			    <width>1280</width>
-			    <height>960</height>
-			    <format>R8G8B8</format>
-			</image>
-			<clip>
-			    <near>0.01</near>
-			    <far>300</far>
-			</clip>
-			<noise>
-			    <type>gaussian</type>
-			    <mean>0</mean>
-			    <stddev>0.007</stddev>
-			</noise>
+			
+            <horizontal_fov>1.086</horizontal_fov>
+            <image>
+              <width>1920</width>
+              <height>1080</height>
+            </image>
+            <clip>
+              <near>0.1</near>
+              <far>100</far>
+            </clip>
+          
 		    </camera>
+            <topic>camera_down</topic>
 	</sensor>
         </link>
         <link name="rotor_0">
