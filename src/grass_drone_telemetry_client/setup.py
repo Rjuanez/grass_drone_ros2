@@ -20,6 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'telemetry_client = grass_drone_telemetry_client.telemetry_client:main',
         ],
     },
 )
