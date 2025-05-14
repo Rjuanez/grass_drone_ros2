@@ -20,6 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'telemetry_server = ground_station_telemetry_server.telemetry_node:main',
         ],
     },
 )
