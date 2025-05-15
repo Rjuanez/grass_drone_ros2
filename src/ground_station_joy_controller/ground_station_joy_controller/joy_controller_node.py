@@ -22,6 +22,9 @@ class JoyController(Node):
       self.joy_sub = self.create_subscription(Joy, '/joy', self.joy_callback, 10)
       self.publisher_output = self.create_publisher(AngleCommand, 'controller_output', 10)
       self.thrust_value = 0.0
+      self.l1_last_value = 0
+      self.square_last_value = 0
+      self.mode = AngleCommand.MODE_UN_ARMED
 
 
 
@@ -34,11 +37,29 @@ class JoyController(Node):
       self.target_roll = (msg.axes[2] if abs(msg.axes[2]) > DEADZONE else 0.0) * MAX_ANGLE   # Joystick inv
       self.target_yaw_rate = (msg.axes[0] if abs(msg.axes[0]) > DEADZONE else 0.0) * MAX_YAW_RATE
 
+      if (self.l1_last_value == 0 and msg.buttons[9] == 1):
+        self.l1_last_value = 1
+      elif (self.l1_last_value == 1 and msg.buttons[9] == 0):
+         self.mode = AngleCommand.MODE_ARMED if self.mode == AngleCommand.MODE_UN_ARMED else AngleCommand.MODE_UN_ARMED
+         self.l1_last_value = 0
+      
+      if (self.square_last_value == 0 and msg.buttons[2] == 1):
+        self.square_last_value = 1
+      elif (self.square_last_value == 1 and msg.buttons[2] == 0):
+        self.mode = AngleCommand.MODE_UN_ARMED
+        self.thrust_value = 0.0
+        self.target_roll = 0.0
+        self.target_pitch = 0.0
+        self.target_yaw_rate = 0.0
+        self.square_last_value = 0
+         
+
       msg = AngleCommand()
-      msg.roll = self.target_roll
-      msg.pitch = self.target_pitch
-      msg.yaw = self.target_yaw_rate
-      msg.thrust = self.thrust_value
+      msg.roll = round(self.target_roll, 2)
+      msg.pitch = round(self.target_pitch, 2)
+      msg.yaw = round(self.target_yaw_rate, 2)
+      msg.thrust = round(self.thrust_value, 0) 
+      msg.mode = self.mode
       self.publisher_output.publish(msg)
 
       #self.get_logger().info(f"Thrust: {self.thrust_value} Pitch: {self.target_pitch} Roll: {self.target_roll} Yaw rate: {self.target_yaw_rate}")
