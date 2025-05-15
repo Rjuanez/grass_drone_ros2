@@ -33,6 +33,7 @@ class TelemetryClient(Node):
                         msg.pitch = float(data["pitch"])
                         msg.yaw = float(data["yaw"])
                         msg.thrust = float(data["thrust"])
+                        msg.mode = int(data["mode"])
                         self.publisher_controller_output.publish(msg)
                         self.get_logger().info(f"Published AngleCommand: {msg}")
                     else:

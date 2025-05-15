@@ -41,6 +41,7 @@ class TelemetryServer(Node):
                 "pitch": msg.pitch,
                 "yaw": msg.yaw,
                 "thrust": msg.thrust,
+                "mode": msg.mode
             }
         }
         message_json = json.dumps(data)
