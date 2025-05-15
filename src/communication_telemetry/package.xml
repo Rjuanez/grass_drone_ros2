@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>ground_station_telemetry_server</name>
+  <name>communication_telemetry</name>
   <version>0.0.0</version>
   <description>TODO: Package description</description>
-  <maintainer email="ruben@juanez.name">ruben</maintainer>
+  <maintainer email="ruben.juanez@estudiantat.upc.edu">ruben</maintainer>
   <license>TODO: License declaration</license>
 
   <depend>rclpy</depend>

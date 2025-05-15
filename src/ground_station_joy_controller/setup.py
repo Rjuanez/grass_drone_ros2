@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'ground_station_telemetry_server'
+package_name = 'ground_station_joy_controller'
 
 setup(
     name=package_name,
@@ -14,13 +14,14 @@ setup(
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='ruben',
-    maintainer_email='ruben@juanez.name',
+    maintainer_email='ruben.juanez@estudiantat.upc.edu',
     description='TODO: Package description',
     license='TODO: License declaration',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'telemetry_server = ground_station_telemetry_server.telemetry_node:main',
+          'joy_controller = ground_station_joy_controller.joy_controller_node:main',
+          'joy_reader_mac = ground_station_joy_controller.joy_reader_mac_m1_node:main',
         ],
     },
 )

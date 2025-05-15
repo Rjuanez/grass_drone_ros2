@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'grass_drone_telemetry_client'
+package_name = 'communication_telemetry'
 
 setup(
     name=package_name,
@@ -14,13 +14,14 @@ setup(
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='ruben',
-    maintainer_email='ruben@juanez.name',
+    maintainer_email='ruben.juanez@estudiantat.upc.edu',
     description='TODO: Package description',
     license='TODO: License declaration',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'telemetry_client = grass_drone_telemetry_client.telemetry_client:main',
+          'telemetry_server = communication_telemetry.telemetry_server:main',
+          'telemetry_client = communication_telemetry.telemetry_client:main',
         ],
     },
 )

@@ -1,6 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Point
+from grass_drone_control_msgs.msg import AngleCommand
 import asyncio
 from websockets.asyncio.server import serve
 import json
@@ -15,7 +16,7 @@ class TelemetryServer(Node):
         self.asyncio_loop = asyncio.get_event_loop()
 
         # Suscripciones a topics
-        self.create_subscription(Point, 'point_topic', self.point_callback, 10)
+        self.create_subscription(AngleCommand, '/controller_output', self.angle_callback, 10)
 
     async def websocket_handler(self, websocket):
         self.websocket_clients.add(websocket)
@@ -32,13 +33,14 @@ class TelemetryServer(Node):
         if self.websocket_clients:
             await asyncio.gather(*(client.send(message_json) for client in self.websocket_clients))
 
-    def point_callback(self, msg: Point):
+    def angle_callback(self, msg: Point):
         data = {
-            "type": "geometry_msgs/Point",
+            "type": "custom/AngleCommand",
             "data": {
-                "x": msg.x,
-                "y": msg.y,
-                "z": msg.z
+                "roll": msg.roll,
+                "pitch": msg.pitch,
+                "yaw": msg.yaw,
+                "thrust": msg.thrust,
             }
         }
         message_json = json.dumps(data)

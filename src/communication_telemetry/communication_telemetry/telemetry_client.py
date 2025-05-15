@@ -1,6 +1,6 @@
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import Point
+from grass_drone_control_msgs.msg import AngleCommand
 import asyncio
 import websockets
 import json
@@ -11,10 +11,10 @@ class TelemetryClient(Node):
         super().__init__('telemetry_client')
 
         # Publisher para Point (puedes añadir más si lo necesitas)
-        self.publisher_point = self.create_publisher(Point, 'point_topic', 10)
+        self.publisher_controller_output = self.create_publisher(AngleCommand, '/controller_output', 10)
 
     async def connect_and_listen(self):
-        uri = "ws://192.168.1.136:8765"
+        uri = "ws://localhost:8765"
         self.get_logger().info(f"Connecting to WebSocket server at {uri}")
 
         try:
@@ -27,14 +27,14 @@ class TelemetryClient(Node):
                     msg_type = obj.get("type")
                     data = obj.get("data")
 
-                    if msg_type == "geometry_msgs/Point":
-                        msg = Point()
-                        msg.x = float(data["x"])
-                        msg.y = float(data["y"])
-                        msg.z = float(data["z"])
-                        self.publisher_point.publish(msg)
-                        self.get_logger().info(f"Published Point: {msg}")
-
+                    if msg_type == "custom/AngleCommand":
+                        msg = AngleCommand()
+                        msg.roll = float(data["roll"])
+                        msg.pitch = float(data["pitch"])
+                        msg.yaw = float(data["yaw"])
+                        msg.thrust = float(data["thrust"])
+                        self.publisher_controller_output.publish(msg)
+                        self.get_logger().info(f"Published AngleCommand: {msg}")
                     else:
                         self.get_logger().warn(f"Unsupported message type: {msg_type}")
 
