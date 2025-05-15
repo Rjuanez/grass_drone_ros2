@@ -30,8 +30,8 @@ class ManualControl(Node):
       msg = ChannelCommand()
       msg.ch1 = int(self.roll)
       msg.ch2 = int(self.pitch)
-      msg.ch3 = int(self.yaw)
-      msg.ch4 = int(self.thrust)
+      msg.ch3 = int(self.thrust)
+      msg.ch4 = int(self.yaw)
       msg.ch5 = int(self.mode)
       self.publisher_channel_output.publish(msg)
 
