@@ -28,11 +28,11 @@ class ManualControl(Node):
 
     def timer_callback(self):
       msg = ChannelCommand()
-      msg.ch1 = self.roll
-      msg.ch2 = self.pitch
-      msg.ch3 = self.yaw
-      msg.ch4 = self.thrust
-      msg.ch5 = self.mode
+      msg.ch1 = int(self.roll)
+      msg.ch2 = int(self.pitch)
+      msg.ch3 = int(self.yaw)
+      msg.ch4 = int(self.thrust)
+      msg.ch5 = int(self.mode)
       self.publisher_channel_output.publish(msg)
 
             
