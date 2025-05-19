@@ -6,7 +6,7 @@ import cv2
 
 class GStreamerPublisher:
     def __init__(self):
-        self.sub = rospy.Subscriber("/camera/image/compressed", CompressedImage, self.callback, queue_size=1)
+        self.sub = rospy.Subscriber("/image_raw/compressed", CompressedImage, self.callback, queue_size=1)
         
         # Define GStreamer pipeline (ajústalo a tu IP/puerto si es vía UDP)
         gst_str = ('appsrc ! videoconvert ! x264enc tune=zerolatency bitrate=500 speed-preset=ultrafast ! '
