@@ -11,7 +11,7 @@ import time
 class ImageSubscriber(Node):
     def __init__(self):
         super().__init__("image_subscriber")
-        self.subscription = self.create_subscription(Image, 'camera_down', self.listener_callback, 10)
+        self.subscription = self.create_subscription(Image, 'image_raw', self.listener_callback, 10)
         self.publisher_pos = self.create_publisher(Point,"/coordenades_dron_aruco",1000)
         self.publisher_ang = self.create_publisher(Vector3, "/angles_dron_aruco",1000)
         self.br = CvBridge()
