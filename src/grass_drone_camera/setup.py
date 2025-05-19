@@ -22,6 +22,7 @@ setup(
         'console_scripts': [
             "aruco_detection_node = grass_drone_camera.aruco_detection:main",
             "get_images_node = grass_drone_camera.get_images:main"
+            "send_images = grass_drone_camera.send_images:main"
         ],
     },
 )
