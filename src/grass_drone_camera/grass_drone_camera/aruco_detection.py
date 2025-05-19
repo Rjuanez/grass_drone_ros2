@@ -81,7 +81,7 @@ class ImageSubscriber(Node):
                         ret, rvec, tvec = cv2.solvePnP(obj_points, corners[i][0], camera_matrix, dist_coeffs)
 
                         if ret:
-                            cv2.drawFrameAxes(img, camera_matrix, dist_coeffs, rvec, tvec, MARKERS_SIZE)
+                            #cv2.drawFrameAxes(img, camera_matrix, dist_coeffs, rvec, tvec, MARKERS_SIZE)
 
                             rotation_matrix, _ = cv2.Rodrigues(rvec)
                             rpy_angles = cv2.RQDecomp3x3(rotation_matrix)[0]
@@ -92,8 +92,8 @@ class ImageSubscriber(Node):
                             info = f"X: {x:.2f}m, Y: {y:.2f}m, Z: {z:.2f}m"
                             inclination = f"Roll: {roll:.1f}°, Pitch: {pitch:.1f}°, Yaw: {yaw:.1f}°"
 
-                            cv2.putText(img, info, (50,50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
-                            cv2.putText(img, inclination, (50,80), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+                            #cv2.putText(img, info, (50,50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+                            #cv2.putText(img, inclination, (50,80), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
 
                             p.x = x
                             p.y = y
@@ -132,7 +132,7 @@ class ImageSubscriber(Node):
                         ret, rvec, tvec = cv2.solvePnP(obj_points, corners[i][0], camera_matrix, dist_coeffs)
 
                         if ret:
-                            cv2.drawFrameAxes(img, camera_matrix, dist_coeffs, rvec, tvec, MARKER_SIZE)
+                            #cv2.drawFrameAxes(img, camera_matrix, dist_coeffs, rvec, tvec, MARKER_SIZE)
 
                             rotation_matrix, _ = cv2.Rodrigues(rvec)
                             rpy_angles = cv2.RQDecomp3x3(rotation_matrix)[0]
@@ -143,8 +143,8 @@ class ImageSubscriber(Node):
                             info = f"X: {x:.2f}m, Y: {y:.2f}m, Z: {z:.2f}m"
                             inclination = f"Roll: {roll:.1f}°, Pitch: {pitch:.1f}°, Yaw: {yaw:.1f}°"
 
-                            cv2.putText(img, info, (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
-                            cv2.putText(img, inclination, (50, 80), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+                            #cv2.putText(img, info, (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+                            #cv2.putText(img, inclination, (50, 80), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
 
                             p.x = x
                             p.y = y
@@ -173,7 +173,7 @@ class ImageSubscriber(Node):
         self.get_logger().info(f'Coordenades: x = {p.x}, y = {p.y}, z = {p.z}')
         self.get_logger().info(f'Angles: x = {angles.x}, y = {angles.y}, z = {angles.z}')
 
-        cv2.imshow("camera_down",img)
+        #cv2.imshow("camera_down",img)
         cv2.waitKey(1)
 
 def main(args=None):
