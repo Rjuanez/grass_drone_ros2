@@ -19,6 +19,16 @@ class GStreamerPublisher:
         if image_np is not None and image_np.shape[1] == 640 and image_np.shape[0] == 480:
             self.out.write(image_np)
 
+
+def main(args=None):
+    rclpy.init(args=args)
+    image_send = GStreamerPublisher()
+    rclpy.spin(image_send)
+    image_send.destroy_node
+    rclpy.shutdown
+
+if __name__ == 'main':
+    main()
 if __name__ == "__main__":
     rospy.init_node("gstreamer_publisher_node")
     GStreamerPublisher()
