@@ -7,3 +7,4 @@ uint8 mode
 # Mode constants
 uint8 MODE_UN_ARMED = 0
 uint8 MODE_ARMED = 1
+uint8 MODE_ALTITUDE_AUTO = 2
